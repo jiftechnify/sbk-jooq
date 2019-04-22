@@ -1,0 +1,93 @@
+plugins {
+	id 'org.springframework.boot' version '2.1.4.RELEASE'
+	id 'org.jetbrains.kotlin.jvm' version '1.2.71'
+	id 'org.jetbrains.kotlin.plugin.spring' version '1.2.71'
+
+	id 'nu.studer.jooq' version '3.0.2'
+}
+
+apply plugin: 'io.spring.dependency-management'
+
+group = 'net.jiftech'
+version = '0.0.1-SNAPSHOT'
+sourceCompatibility = '1.8'
+
+repositories {
+	mavenCentral()
+}
+
+sourceSets {
+	main.kotlin.srcDirs += 'src/main/kotlin'
+	main.kotlin.srcDirs += 'src/main/generated-jooq'
+}
+
+dependencies {
+	implementation 'org.springframework.boot:spring-boot-starter'
+	implementation 'org.jetbrains.kotlin:kotlin-reflect'
+	implementation 'org.jetbrains.kotlin:kotlin-stdlib-jdk8'
+	implementation 'org.springframework.boot:spring-boot-starter-web'
+	implementation 'org.springframework.boot:spring-boot-starter-jooq'
+
+	runtimeOnly 'mysql:mysql-connector-java:8.0.15'
+
+	// jooq
+	implementation 'org.jooq:jooq'
+	implementation 'org.jooq:jooq-parent'
+	implementation 'org.jooq:jooq-meta'
+	implementation 'org.jooq:jooq-codegen'
+	implementation 'org.jooq:jooq-meta-extensions'
+
+	jooqRuntime 'mysql:mysql-connector-java:8.0.15'
+	jooqRuntime 'javax.activation:activation:1.1.1'
+	jooqRuntime 'javax.xml.bind:jaxb-api:2.3.0'
+	jooqRuntime 'com.sun.xml.bind:jaxb-core:2.3.0.1'
+	jooqRuntime 'com.sun.xml.bind:jaxb-impl:2.3.0.1'
+
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+
+	// jUnit
+	testImplementation 'org.junit.jupiter:junit-jupiter-api:5.3.2'
+	testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.3.2'
+}
+
+jooq {
+	version = '3.11.7'
+	edition = 'OSS'
+	spring_kotlin_jooq(sourceSets.main) {
+		jdbc {
+			driver = 'com.mysql.cj.jdbc.Driver'
+			url = 'jdbc:mysql://127.0.0.1:3306/sbk_jooq?nullNamePatternMatchesAll=true&createDatabaseIfNotExist=true&useSSL=false'
+			user = 'jooq'
+			password = 'hogehoge'
+		}
+		generator {
+			name = 'org.jooq.codegen.DefaultGenerator'
+			database {
+				name = 'org.jooq.meta.mysql.MySQLDatabase'
+				inputSchema = 'sbk_jooq'
+				outputSchemaToDefault = true
+			}
+			generate {
+				javaTimeTypes = true
+			}
+			target {
+				packageName = 'spring.kotlin.jooq.generated.jooq'
+				directory = 'src/main/generated-jooq'
+			}
+		}
+	}
+}
+
+compileKotlin {
+	kotlinOptions {
+		freeCompilerArgs = ['-Xjsr305=strict']
+		jvmTarget = '1.8'
+	}
+}
+
+compileTestKotlin {
+	kotlinOptions {
+		freeCompilerArgs = ['-Xjsr305=strict']
+		jvmTarget = '1.8'
+	}
+}
